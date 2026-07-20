@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 // Node runtime — we need full FormData/Buffer support for audio uploads,
 // and requests to Groq can take a few seconds.
@@ -25,8 +27,35 @@ const ALLOWED_LANGS: Record<string, string> = {
   en: "English",
 };
 
+// -- Rate Limiting Setup ----------------------------------------------------
+
+let ratelimit: Ratelimit | null = null;
+
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  ratelimit = new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(5, "24 h"),
+    analytics: true,
+  });
+} else {
+  console.warn("Upstash Redis environment variables are missing. Rate limiting is disabled.");
+}
+
 export async function POST(req: NextRequest) {
   try {
+    // -- Rate Limiting Check ------------------------------------------------
+    if (ratelimit) {
+      const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+      const { success } = await ratelimit.limit(ip);
+      
+      if (!success) {
+        return NextResponse.json(
+          { error: "You've reached your daily limit of 5 transcriptions. Try again tomorrow." },
+          { status: 429 }
+        );
+      }
+    }
+
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json(

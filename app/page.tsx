@@ -236,6 +236,11 @@ export default function Home() {
           {/* ----------------------------------------------------------- */}
           {status !== "done" && (
             <>
+              {/* Logo */}
+              <div className="mb-8 flex justify-center">
+                <img src="/logo.svg" alt="VoiceSnap Logo" className="w-52" />
+              </div>
+
               {/* Badge */}
               <div className="mb-6 flex justify-center">
                 <div className="flex items-center gap-1.5 rounded-full border border-[#232838] bg-[#131720] px-3.5 py-1.5 font-mono text-[11px] tracking-wide text-[#9CA3AF]">
