@@ -7,7 +7,7 @@ const SUMMARY_MODEL = "llama-3.3-70b-versatile";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = ["mp3", "wav", "ogg", "m4a", "opus"];
-const ALLOWED_LANGS: Record<string, string> = {
+export const ALLOWED_LANGS: Record<string, string> = {
   hi: "Hindi",
   ur: "Urdu",
   rur: "Roman Urdu (Urdu written in English/Latin script)",
