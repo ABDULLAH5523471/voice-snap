@@ -6,7 +6,7 @@ const WHISPER_MODEL = "whisper-large-v3-turbo";
 const SUMMARY_MODEL = "llama-3.3-70b-versatile";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
-const ALLOWED_EXTENSIONS = ["mp3", "wav", "ogg", "m4a"];
+const ALLOWED_EXTENSIONS = ["mp3", "wav", "ogg", "m4a", "opus"];
 const ALLOWED_LANGS: Record<string, string> = {
   hi: "Hindi",
   ur: "Urdu",
@@ -98,7 +98,8 @@ export async function processTranscription(
 
   // Step 1: Transcribe
   const whisperForm = new FormData();
-  whisperForm.append("file", file, file.name);
+  const groqFilename = ext === "opus" ? file.name.replace(/\.opus$/i, ".ogg") : file.name;
+  whisperForm.append("file", file, groqFilename);
   whisperForm.append("model", WHISPER_MODEL);
   whisperForm.append("response_format", "json");
 
