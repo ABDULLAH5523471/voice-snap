@@ -238,7 +238,7 @@ export default function Home() {
             <>
               {/* Logo */}
               <div className="mb-8 flex justify-center">
-                <img src="/logo.svg" alt="VoiceSnap Logo" className="w-52" />
+                <img src="/logo.svg" alt="VoiceSnap Logo" className="w-[230px] h-[60px] object-contain" />
               </div>
 
               {/* Badge */}
@@ -266,11 +266,10 @@ export default function Home() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`mt-10 flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200 ${
-                  isDragging
-                    ? "scale-[1.01] border-[#FF7A00] bg-[#FF7A00]/5"
-                    : "border-[#232838] bg-[#131720] hover:border-[#FF7A00]/50 hover:bg-[#161b26]"
-                }`}
+                className={`mt-10 flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200 ${isDragging
+                  ? "scale-[1.01] border-[#FF7A00] bg-[#FF7A00]/5"
+                  : "border-[#232838] bg-[#131720] hover:border-[#FF7A00]/50 hover:bg-[#161b26]"
+                  }`}
               >
                 <input
                   id="file-input"
@@ -316,11 +315,10 @@ export default function Home() {
                       type="button"
                       onClick={() => setSummaryLang(lang.code)}
                       disabled={isProcessing}
-                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
-                        summaryLang === lang.code
-                          ? "bg-[#FF7A00] text-white shadow-sm"
-                          : "text-[#9CA3AF] hover:text-white"
-                      } disabled:pointer-events-none`}
+                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150 ${summaryLang === lang.code
+                        ? "bg-[#FF7A00] text-white shadow-sm"
+                        : "text-[#9CA3AF] hover:text-white"
+                        } disabled:pointer-events-none`}
                       title={lang.name}
                     >
                       {lang.label}
@@ -422,22 +420,20 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setViewLang("target")}
-                    className={`rounded-md px-6 py-2 text-sm font-medium transition-all duration-150 ${
-                      viewLang === "target"
-                        ? "bg-[#FF7A00] text-white shadow-sm"
-                        : "text-[#9CA3AF] hover:text-white"
-                    }`}
+                    className={`rounded-md px-6 py-2 text-sm font-medium transition-all duration-150 ${viewLang === "target"
+                      ? "bg-[#FF7A00] text-white shadow-sm"
+                      : "text-[#9CA3AF] hover:text-white"
+                      }`}
                   >
                     {LANGUAGES.find(l => l.code === summaryLang)?.name}
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewLang("en")}
-                    className={`rounded-md px-6 py-2 text-sm font-medium transition-all duration-150 ${
-                      viewLang === "en"
-                        ? "bg-[#FF7A00] text-white shadow-sm"
-                        : "text-[#9CA3AF] hover:text-white"
-                    }`}
+                    className={`rounded-md px-6 py-2 text-sm font-medium transition-all duration-150 ${viewLang === "en"
+                      ? "bg-[#FF7A00] text-white shadow-sm"
+                      : "text-[#9CA3AF] hover:text-white"
+                      }`}
                   >
                     English
                   </button>
