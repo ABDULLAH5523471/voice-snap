@@ -238,6 +238,7 @@ function errorPage(message: string): string {
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const ownerToken = req.headers.get("x-owner-token") ?? undefined;
     const formData = await req.formData();
 
     const fileData = formData.get("fileData") as string | null;
@@ -259,7 +260,7 @@ export async function POST(req: NextRequest) {
     processForm.append("file", file);
     processForm.append("lang", lang);
 
-    const result = await processTranscription(processForm, ip);
+    const result = await processTranscription(processForm, ip, ownerToken);
 
     return new Response(
       resultPage(

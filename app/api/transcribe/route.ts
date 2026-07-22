@@ -7,8 +7,9 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const ownerToken = req.headers.get("x-owner-token") ?? undefined;
     const formData = await req.formData();
-    const result = await processTranscription(formData, ip);
+    const result = await processTranscription(formData, ip, ownerToken);
     return NextResponse.json(result);
   } catch (err) {
     if (err instanceof TranscriptionError) {

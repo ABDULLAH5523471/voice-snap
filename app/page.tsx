@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Upload,
   FileAudio,
@@ -41,6 +41,20 @@ interface TranscribeResponse {
   transcript_english: string;
   summary_target: string;
   summary_english: string;
+}
+
+// ---------------------------------------------------------------------------
+// Owner-bypass cookie helpers (invisible to normal visitors)
+// ---------------------------------------------------------------------------
+
+function getOwnerToken(): string | null {
+  const match = document.cookie.match(/(?:^|;\s*)owner_token=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setOwnerToken(token: string) {
+  const maxAge = 60 * 60 * 24 * 365; // 1 year
+  document.cookie = `owner_token=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Lax`;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +134,20 @@ export default function Home() {
 
   const isProcessing = status === "transcribing" || status === "summarizing";
 
+  // Capture ?owner=<token> from URL, persist to cookie, then remove from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("owner");
+    if (token) {
+      setOwnerToken(token);
+      params.delete("owner");
+      const clean = params.toString()
+        ? `${window.location.pathname}?${params.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", clean);
+    }
+  }, []);
+
   // -- Validation ----------------------------------------------------------
 
   const validateFile = (candidate: File): string | null => {
@@ -198,8 +226,13 @@ export default function Home() {
       formData.append("file", file);
       formData.append("lang", summaryLang);
 
+      const headers: Record<string, string> = {};
+      const ownerToken = getOwnerToken();
+      if (ownerToken) headers["x-owner-token"] = ownerToken;
+
       const res = await fetch("/api/transcribe", {
         method: "POST",
+        headers,
         body: formData,
       });
 

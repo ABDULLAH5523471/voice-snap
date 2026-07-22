@@ -55,9 +55,15 @@ export class TranscriptionError extends Error {
 export async function processTranscription(
   formData: FormData,
   ip: string,
+  ownerToken?: string,
 ): Promise<TranscribeResult> {
-  // Rate limit
-  if (ratelimit) {
+  // Rate limit — skip if owner bypass token matches
+  const isOwnerBypass =
+    ownerToken &&
+    process.env.OWNER_BYPASS_TOKEN &&
+    ownerToken === process.env.OWNER_BYPASS_TOKEN;
+
+  if (ratelimit && !isOwnerBypass) {
     const { success } = await ratelimit.limit(ip);
     if (!success) {
       throw new TranscriptionError(
