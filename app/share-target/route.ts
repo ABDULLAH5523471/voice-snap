@@ -283,7 +283,7 @@ export async function POST(req: NextRequest) {
     if (file.size > 3 * 1024 * 1024) {
       return new Response(
         errorPage(
-          "This voice note is too long to share directly — files over about 3 MB (roughly 2+ minutes) aren't supported via the share menu yet. Try opening voicesnap.vercel.app directly and uploading the file there instead, which supports files up to 25 MB.",
+          "This voice note is too long to share directly — files over about 3 MB (roughly 2+ minutes) aren't supported via the share menu yet. Try opening voice-snap-chi.vercel.app directly and uploading the file there instead, which supports files up to 25 MB.",
         ),
         {
           status: 413,
