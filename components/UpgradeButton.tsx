@@ -34,9 +34,12 @@ export default function UpgradeButton() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        alert(data.error || "Failed to initiate checkout. Check server logs.");
       }
-    } catch {
-      // silent fail
+    } catch (err) {
+      console.error(err);
+      alert("Checkout failed. Please check the console or ensure Paddle environment variables are set in Vercel.");
     } finally {
       setLoading(false);
     }
