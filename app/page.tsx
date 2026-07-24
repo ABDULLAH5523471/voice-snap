@@ -13,6 +13,7 @@ import {
   Loader2,
   Globe,
 } from "lucide-react";
+import { SignInButton, UserButton, useSession } from "@clerk/nextjs";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -121,6 +122,7 @@ function useCopyToClipboard() {
 // ---------------------------------------------------------------------------
 
 export default function Home() {
+  const { session } = useSession();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
@@ -262,6 +264,17 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#0B0E14] px-4 py-16 sm:px-6">
+      <div className="fixed top-4 right-4 z-50">
+        {!session ? (
+          <SignInButton mode="modal">
+            <button className="rounded-lg border border-[#232838] bg-[#131720] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition-colors hover:border-[#FF7A00]/50 hover:text-white">
+              Sign In
+            </button>
+          </SignInButton>
+        ) : (
+          <UserButton />
+        )}
+      </div>
       <div className="w-full max-w-xl">
         <div className="rounded-3xl border border-[#232838] bg-[#0B0E14] p-6 sm:p-10">
           {/* ----------------------------------------------------------- */}

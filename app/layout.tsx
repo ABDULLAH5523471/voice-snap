@@ -1,3 +1,4 @@
+import {ClerkProvider} from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SWRegistration } from "./sw-registration";
@@ -27,8 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <SWRegistration />
-        {children}
+        <ClerkProvider>
+          <SWRegistration />
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   );
