@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.6.0",
+    "@paddle/paddle-node-sdk": "^3.8.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "lucide-react": "^1.24.0",

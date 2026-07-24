@@ -14,6 +14,7 @@ import {
   Globe,
 } from "lucide-react";
 import { SignInButton, UserButton, useSession } from "@clerk/nextjs";
+import UpgradeButton from "@/components/UpgradeButton";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -264,7 +265,8 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#0B0E14] px-4 py-16 sm:px-6">
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
+        <UpgradeButton />
         {!session ? (
           <SignInButton mode="modal">
             <button className="rounded-lg border border-[#232838] bg-[#131720] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition-colors hover:border-[#FF7A00]/50 hover:text-white">
