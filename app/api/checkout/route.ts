@@ -20,19 +20,14 @@ export async function POST(req: Request) {
         },
       ],
       ...(customerEmail
-        ? {
-            billingDetails: {
-              paymentTerms: { frequency: 1, interval: "month" },
-            },
-          }
+        ? { customData: { email: customerEmail } }
         : {}),
-      customData: customerEmail ? { email: customerEmail } : undefined,
     });
 
     const checkoutUrl = transaction.checkout?.url;
 
     if (!checkoutUrl) {
-      console.error("Paddle: no checkout URL returned", JSON.stringify(transaction, null, 2));
+      console.error("[Paddle] No checkout URL returned:", JSON.stringify(transaction, null, 2));
       return NextResponse.json(
         { error: "Checkout session created but no URL returned" },
         { status: 500 }
@@ -41,13 +36,29 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: checkoutUrl });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : String(error);
-    const status = (error as { statusCode?: number })?.statusCode;
-    console.error(`Paddle checkout error [${status ?? "unknown"}]:`, msg);
-    console.error("Full error:", JSON.stringify(error, null, 2));
+    const err = error as {
+      message?: string;
+      statusCode?: number;
+      type?: string;
+      code?: string;
+    };
+
+    console.error(`[Paddle] Checkout error [${err.statusCode ?? "??"}]:`, err.message);
+
+    // Surface actionable dashboard config errors
+    if (err.code === "transaction_default_checkout_url_not_set") {
+      return NextResponse.json(
+        {
+          error:
+            "Paddle checkout not configured. Go to Paddle Dashboard → Checkout settings → set a Default Payment Link.",
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
-      { error: `Failed to create checkout: ${msg}` },
-      { status: status ?? 500 }
+      { error: err.message ?? "Failed to create checkout session" },
+      { status: err.statusCode ?? 500 }
     );
   }
 }
