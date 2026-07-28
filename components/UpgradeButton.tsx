@@ -8,38 +8,45 @@ export default function UpgradeButton() {
   const { session } = useSession();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setIsSubscribed(localStorage.getItem("vs_subscribed") === "true");
   }, []);
 
-  if (!session) {
-    return (
-      <span className="text-xs text-[#9CA3AF]">Sign in to upgrade</span>
-    );
-  }
+  if (!mounted) return null;
 
+  // Signed out — show nothing (SignIn button handles this)
+  if (!session) return null;
+
+  // Signed in + active subscription
   if (isSubscribed) {
     return (
-      <span className="rounded-lg border border-[#232838] bg-[#131720] px-3 py-1.5 text-xs font-medium text-[#FF7A00]">
+      <span className="flex items-center gap-1.5 rounded-full border border-[#FF7A00]/30 bg-[#FF7A00]/10 px-3 py-1 text-xs font-semibold text-[#FF7A00]">
+        <Sparkles className="h-3 w-3" strokeWidth={2.25} />
         Pro
       </span>
     );
   }
 
+  // Signed in + no subscription
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: session.user.emailAddresses[0]?.emailAddress }),
+      });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || "Failed to initiate checkout. Check server logs.");
+        alert(data.error || "Checkout failed — check server logs.");
       }
-    } catch (err) {
-      console.error(err);
-      alert("Checkout failed. Please check the console or ensure Paddle environment variables are set in Vercel.");
+    } catch {
+      alert("Checkout failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -53,7 +60,7 @@ export default function UpgradeButton() {
       className="flex items-center gap-1.5 rounded-lg bg-[#FF7A00] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#ff8c1f] active:scale-[0.98] disabled:opacity-60"
     >
       <Sparkles className="h-3 w-3" strokeWidth={2.25} />
-      {loading ? "Redirecting…" : "Upgrade"}
+      {loading ? "Redirecting…" : "Upgrade to Pro $3/mo"}
     </button>
   );
 }

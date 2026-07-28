@@ -1,5 +1,21 @@
 "use client";
 
+export const metadata = {
+  title: "VoiceSnap – Instant Voice Transcription & Summarization",
+  description: "Upload a voice message and get an instant, accurate transcription and concise summary in multiple languages.",
+  openGraph: {
+    title: "VoiceSnap – Instant Voice Transcription",
+    description: "Transcribe and summarize voice messages instantly. Supports Hindi, Urdu, Punjabi, English and more.",
+    url: "https://voicesnap.example.com",
+    siteName: "VoiceSnap",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    locale: "en_US",
+    type: "website",
+  },
+  robots: "index,follow",
+};
+
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Upload,
@@ -57,6 +73,7 @@ function getOwnerToken(): string | null {
 function setOwnerToken(token: string) {
   const maxAge = 60 * 60 * 24 * 365; // 1 year
   document.cookie = `owner_token=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+  try { localStorage.setItem("owner_token", token); } catch (err) {}
 }
 
 // ---------------------------------------------------------------------------
