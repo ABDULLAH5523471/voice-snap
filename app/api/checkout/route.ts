@@ -58,6 +58,7 @@ export async function POST(req: Request) {
         },
       ],
       ...(customerId ? { customerId } : {}),
+      checkout: { url: null },
     });
 
     const checkoutUrl = transaction.checkout?.url;
