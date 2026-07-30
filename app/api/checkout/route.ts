@@ -15,17 +15,22 @@ export async function POST(req: Request) {
     let customerId: string | undefined;
 
     if (customerEmail) {
+      console.log("[Paddle] Looking up customer by email:", customerEmail);
       const existing = await paddle.customers.list({ email: [customerEmail] });
       const customers = await existing.next();
       const first = customers?.[0];
       if (first) {
         customerId = first.id;
+        console.log("[Paddle] Found existing customer:", customerId);
       } else {
+        console.log("[Paddle] Creating new customer:", customerEmail);
         const created = await paddle.customers.create({ email: customerEmail });
         customerId = created.id;
+        console.log("[Paddle] Created customer:", customerId);
       }
     }
 
+    console.log("[Paddle] Creating transaction with customerId:", customerId);
     const transaction = await paddle.transactions.create({
       items: [
         {
@@ -53,9 +58,10 @@ export async function POST(req: Request) {
       statusCode?: number;
       type?: string;
       code?: string;
+      errors?: unknown;
     };
 
-    console.error(`[Paddle] Checkout error [${err.statusCode ?? "??"}]:`, err.message);
+    console.error(`[Paddle] Checkout error [${err.statusCode ?? "??"}] code=${err.code} type=${err.type}:`, err.message);
 
     if (err.code === "transaction_default_checkout_url_not_set") {
       return NextResponse.json(
