@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     title: "VoiceSnap",
   },
   icons: {
+    icon: "/logo.svg",
     apple: "/apple-touch-icon.png",
   },
 };
