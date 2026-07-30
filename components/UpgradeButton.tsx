@@ -3,9 +3,13 @@
 import { useSession } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
+import { initializePaddle, type Paddle } from "@paddle/paddle-js";
+
+const PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID;
 
 export default function UpgradeButton() {
   const { session } = useSession();
+  const [paddle, setPaddle] = useState<Paddle | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -15,12 +19,25 @@ export default function UpgradeButton() {
     setIsSubscribed(localStorage.getItem("vs_subscribed") === "true");
   }, []);
 
+  useEffect(() => {
+    if (
+      !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ||
+      !process.env.NEXT_PUBLIC_PADDLE_ENV
+    ) {
+      return;
+    }
+    initializePaddle({
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+      environment: process.env.NEXT_PUBLIC_PADDLE_ENV as
+        | "sandbox"
+        | "production",
+    }).then((p) => p && setPaddle(p));
+  }, []);
+
   if (!mounted) return null;
 
-  // Signed out — show nothing (SignIn button handles this)
   if (!session) return null;
 
-  // Signed in + active subscription
   if (isSubscribed) {
     return (
       <span className="flex items-center gap-1.5 rounded-full border border-[#FF7A00]/30 bg-[#FF7A00]/10 px-3 py-1 text-xs font-semibold text-[#FF7A00]">
@@ -30,27 +47,16 @@ export default function UpgradeButton() {
     );
   }
 
-  // Signed in + no subscription
-  const handleUpgrade = async () => {
+  const handleUpgrade = () => {
+    if (!paddle || !PRICE_ID) return;
     setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: session.user.emailAddresses[0]?.emailAddress }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        setLoading(false);
-        window.location.href = data.url;
-        return;
-      } else {
-        alert(data.error || "Checkout failed — check server logs.");
-      }
-    } catch {
-      alert("Checkout failed. Please try again.");
-    }
-    setLoading(false);
+    paddle.Checkout.open({
+      customer: { email: session.user.emailAddresses[0]?.emailAddress },
+      items: [{ priceId: PRICE_ID, quantity: 1 }],
+      settings: {
+        variant: "one-page",
+      },
+    });
   };
 
   return (
@@ -61,7 +67,7 @@ export default function UpgradeButton() {
       className="flex items-center gap-1.5 rounded-lg bg-[#FF7A00] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#ff8c1f] active:scale-[0.98] disabled:opacity-60"
     >
       <Sparkles className="h-3 w-3" strokeWidth={2.25} />
-      {loading ? "Redirecting…" : "Upgrade to Pro $3/mo"}
+      {loading ? "Opening Checkout…" : "Upgrade to Pro $3/mo"}
     </button>
   );
 }
