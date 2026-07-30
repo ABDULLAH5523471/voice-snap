@@ -41,15 +41,16 @@ export default function UpgradeButton() {
       });
       const data = await res.json();
       if (data.url) {
+        setLoading(false);
         window.location.href = data.url;
+        return;
       } else {
         alert(data.error || "Checkout failed — check server logs.");
       }
     } catch {
       alert("Checkout failed. Please try again.");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (
