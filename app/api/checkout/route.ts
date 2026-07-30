@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         },
       ],
       ...(customerEmail
-        ? { customData: { email: customerEmail } }
+        ? { customer: { email: customerEmail } }
         : {}),
     });
 
