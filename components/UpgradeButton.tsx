@@ -11,7 +11,9 @@ const ENV = process.env.NEXT_PUBLIC_PADDLE_ENV;
 declare global {
   interface Window {
     Paddle?: {
-      Setup: (config: { token: string; environment: string }) => void;
+      Environment: { set: (env: string) => void };
+      Initialized?: boolean;
+      Initialize: (config: { token: string }) => void;
       Checkout: {
         open: (config: {
           customer?: { email?: string };
@@ -45,7 +47,11 @@ export default function UpgradeButton() {
     script.src = "https://cdn.paddle.com/paddle/paddle.js";
     script.async = true;
     script.onload = () => {
-      window.Paddle?.Setup({ token: CLIENT_TOKEN, environment: ENV });
+      const p = window.Paddle;
+      if (p) {
+        p.Environment.set(ENV);
+        p.Initialize({ token: CLIENT_TOKEN });
+      }
       setPaddleReady(true);
     };
     document.head.appendChild(script);
