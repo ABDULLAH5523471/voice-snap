@@ -12,6 +12,20 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const customerEmail: string | undefined = body?.email;
 
+    let customerId: string | undefined;
+
+    if (customerEmail) {
+      const existing = await paddle.customers.list({ email: [customerEmail] });
+      const customers = await existing.next();
+      const first = customers?.[0];
+      if (first) {
+        customerId = first.id;
+      } else {
+        const created = await paddle.customers.create({ email: customerEmail });
+        customerId = created.id;
+      }
+    }
+
     const transaction = await paddle.transactions.create({
       items: [
         {
@@ -19,9 +33,7 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
-      ...(customerEmail
-        ? { customer: { email: customerEmail } }
-        : {}),
+      ...(customerId ? { customerId } : {}),
     });
 
     const checkoutUrl = transaction.checkout?.url;
@@ -45,7 +57,6 @@ export async function POST(req: Request) {
 
     console.error(`[Paddle] Checkout error [${err.statusCode ?? "??"}]:`, err.message);
 
-    // Surface actionable dashboard config errors
     if (err.code === "transaction_default_checkout_url_not_set") {
       return NextResponse.json(
         {
