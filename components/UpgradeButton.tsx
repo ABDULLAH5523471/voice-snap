@@ -10,7 +10,7 @@ const ENV = process.env.NEXT_PUBLIC_PADDLE_ENV;
 
 declare global {
   interface Window {
-    Paddle?: {
+    PaddleBillingV1?: {
       Environment: { set: (env: string) => void };
       Initialized?: boolean;
       Initialize: (config: { token: string }) => void;
@@ -39,15 +39,16 @@ export default function UpgradeButton() {
 
   useEffect(() => {
     if (!CLIENT_TOKEN || !ENV) return;
-    if (document.querySelector('script[src="https://cdn.paddle.com/paddle/paddle.js"]')) {
+    const CDN_URL = "https://cdn.paddle.com/paddle/v2/paddle.js";
+    if (document.querySelector(`script[src="${CDN_URL}"]`)) {
       setPaddleReady(true);
       return;
     }
     const script = document.createElement("script");
-    script.src = "https://cdn.paddle.com/paddle/paddle.js";
+    script.src = CDN_URL;
     script.async = true;
     script.onload = () => {
-      const p = window.Paddle;
+      const p = window.PaddleBillingV1;
       if (p) {
         p.Environment.set(ENV);
         p.Initialize({ token: CLIENT_TOKEN });
@@ -73,7 +74,7 @@ export default function UpgradeButton() {
   const handleUpgrade = () => {
     if (!paddleReady || !PRICE_ID) return;
     setLoading(true);
-    window.Paddle?.Checkout.open({
+    window.PaddleBillingV1?.Checkout.open({
       customer: { email: session.user.emailAddresses[0]?.emailAddress },
       items: [{ priceId: PRICE_ID, quantity: 1 }],
       settings: { variant: "one-page" },
