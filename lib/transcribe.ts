@@ -56,14 +56,15 @@ export async function processTranscription(
   formData: FormData,
   ip: string,
   ownerToken?: string,
+  isPro = false,
 ): Promise<TranscribeResult> {
-  // Rate limit — skip if owner bypass token matches
+  // Rate limit — skip if owner bypass token matches, or user has active Pro subscription
   const isOwnerBypass =
     ownerToken &&
     process.env.OWNER_BYPASS_TOKEN &&
     ownerToken === process.env.OWNER_BYPASS_TOKEN;
 
-  if (ratelimit && !isOwnerBypass) {
+  if (ratelimit && !isOwnerBypass && !isPro) {
     const { success } = await ratelimit.limit(ip);
     if (!success) {
       throw new TranscriptionError(

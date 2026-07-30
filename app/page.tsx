@@ -4,9 +4,7 @@ export const metadata = {
   openGraph: {
     title: "VoiceSnap – Instant Voice Transcription",
     description: "Transcribe and summarize voice messages instantly. Supports Hindi, Urdu, Punjabi, English and more.",
-    url: "https://voicesnap.example.com",
     siteName: "VoiceSnap",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     locale: "en_US",
     type: "website",
   },

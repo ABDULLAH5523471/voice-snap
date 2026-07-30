@@ -1,7 +1,7 @@
 "use client";
 
-import { useSession } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 
 const PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID;
@@ -26,15 +26,13 @@ declare global {
 }
 
 export default function UpgradeButton() {
-  const { session } = useSession();
+  const { user, isLoaded } = useUser();
   const [paddleReady, setPaddleReady] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setIsSubscribed(localStorage.getItem("vs_subscribed") === "true");
   }, []);
 
   useEffect(() => {
@@ -58,9 +56,11 @@ export default function UpgradeButton() {
     document.head.appendChild(script);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || !isLoaded) return null;
 
-  if (!session) return null;
+  if (!user) return null;
+
+  const isSubscribed = user.publicMetadata?.subscription_status === "active";
 
   if (isSubscribed) {
     return (
@@ -75,7 +75,7 @@ export default function UpgradeButton() {
     if (!paddleReady || !PRICE_ID) return;
     setLoading(true);
     window.PaddleBillingV1?.Checkout.open({
-      customer: { email: session.user.emailAddresses[0]?.emailAddress },
+      customer: { email: user.primaryEmailAddress?.emailAddress },
       items: [{ priceId: PRICE_ID, quantity: 1 }],
       settings: { variant: "one-page" },
     });
