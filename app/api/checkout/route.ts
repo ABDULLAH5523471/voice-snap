@@ -1,14 +1,33 @@
 import { NextResponse } from "next/server";
 import { Paddle, Environment } from "@paddle/paddle-node-sdk";
 
-const paddle = new Paddle(process.env.PADDLE_API_KEY!, {
-  environment: process.env.PADDLE_API_KEY?.includes("_sdbx_")
-    ? Environment.sandbox
-    : Environment.production,
-});
+const priceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID;
+const apiKey = process.env.PADDLE_API_KEY;
+
+if (!apiKey) {
+  console.error("[Paddle] Missing PADDLE_API_KEY environment variable");
+}
+if (!priceId) {
+  console.error("[Paddle] Missing NEXT_PUBLIC_PADDLE_PRICE_ID environment variable");
+}
+
+const paddle = apiKey
+  ? new Paddle(apiKey, {
+      environment: apiKey.includes("_sdbx_")
+        ? Environment.sandbox
+        : Environment.production,
+    })
+  : null;
 
 export async function POST(req: Request) {
   try {
+    if (!paddle || !priceId) {
+      return NextResponse.json(
+        { error: "Paddle is not configured. Missing API key or price ID in environment variables." },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const customerEmail: string | undefined = body?.email;
 
@@ -34,7 +53,7 @@ export async function POST(req: Request) {
     const transaction = await paddle.transactions.create({
       items: [
         {
-          priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID!,
+          priceId,
           quantity: 1,
         },
       ],
