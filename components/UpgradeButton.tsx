@@ -3,13 +3,29 @@
 import { useSession } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
-import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 
 const PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID;
+const CLIENT_TOKEN = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+const ENV = process.env.NEXT_PUBLIC_PADDLE_ENV;
+
+declare global {
+  interface Window {
+    Paddle?: {
+      Setup: (config: { token: string; environment: string }) => void;
+      Checkout: {
+        open: (config: {
+          customer?: { email?: string };
+          items: { priceId: string; quantity: number }[];
+          settings?: { variant?: string };
+        }) => void;
+      };
+    };
+  }
+}
 
 export default function UpgradeButton() {
   const { session } = useSession();
-  const [paddle, setPaddle] = useState<Paddle | null>(null);
+  const [paddleReady, setPaddleReady] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -20,18 +36,19 @@ export default function UpgradeButton() {
   }, []);
 
   useEffect(() => {
-    if (
-      !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ||
-      !process.env.NEXT_PUBLIC_PADDLE_ENV
-    ) {
+    if (!CLIENT_TOKEN || !ENV) return;
+    if (document.querySelector('script[src="https://cdn.paddle.com/paddle/paddle.js"]')) {
+      setPaddleReady(true);
       return;
     }
-    initializePaddle({
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
-      environment: process.env.NEXT_PUBLIC_PADDLE_ENV as
-        | "sandbox"
-        | "production",
-    }).then((p) => p && setPaddle(p));
+    const script = document.createElement("script");
+    script.src = "https://cdn.paddle.com/paddle/paddle.js";
+    script.async = true;
+    script.onload = () => {
+      window.Paddle?.Setup({ token: CLIENT_TOKEN, environment: ENV });
+      setPaddleReady(true);
+    };
+    document.head.appendChild(script);
   }, []);
 
   if (!mounted) return null;
@@ -48,14 +65,12 @@ export default function UpgradeButton() {
   }
 
   const handleUpgrade = () => {
-    if (!paddle || !PRICE_ID) return;
+    if (!paddleReady || !PRICE_ID) return;
     setLoading(true);
-    paddle.Checkout.open({
+    window.Paddle?.Checkout.open({
       customer: { email: session.user.emailAddresses[0]?.emailAddress },
       items: [{ priceId: PRICE_ID, quantity: 1 }],
-      settings: {
-        variant: "one-page",
-      },
+      settings: { variant: "one-page" },
     });
   };
 
